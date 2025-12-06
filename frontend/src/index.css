@@ -1,0 +1,217 @@
+/* 1. Import Font Poppins */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
+/* 2. Setup Tailwind Standard */
+@import "tailwindcss";
+
+/* 3. Global Styles */
+body {
+    font-family: "Poppins", sans-serif;
+    scroll-behavior: smooth;
+    margin: 0;
+    padding: 0;
+    /* Opsional: Ubah warna default body agar tidak putih terang menyilaukan saat load */
+    background-color: #f8fafc;
+}
+
+/* --- ANIMATIONS & CUSTOM STYLES --- */
+
+/* Animated gradient background (Hero) */
+.hero-gradient {
+    background: linear-gradient(
+            135deg,
+            #667eea 0%,
+            #764ba2 25%,
+            #f093fb 50%,
+            #4facfe 75%,
+            #00f2fe 100%
+    );
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Floating animation */
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+.float-animation {
+    animation: float 6s ease-in-out infinite;
+}
+
+/* Glassmorphism */
+.glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Hover glow effect */
+.glow-on-hover {
+    transition: all 0.3s ease;
+}
+
+.glow-on-hover:hover {
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.6);
+    transform: translateY(-5px);
+}
+
+/* --- CUSTOM SCROLLBAR (UPDATED) --- */
+/* Agar menyatu dengan tema Dark Blue/Informatika */
+
+::-webkit-scrollbar {
+    width: 10px; /* Lebar scrollbar */
+}
+
+/* Track (Jalur Scroll) - Dibuat gelap (Slate 900) */
+::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+
+/* Thumb (Batang Scroll) - Biru Informatika */
+::-webkit-scrollbar-thumb {
+    background: #3b82f6; /* Blue 500 */
+    border-radius: 10px; /* Sudut bulat */
+    border: 2px solid #0f172a; /* Border trick agar terlihat 'mengambang' dari track */
+}
+
+/* Thumb Hover - Berubah jadi Cyan */
+::-webkit-scrollbar-thumb:hover {
+    background: #06b6d4; /* Cyan 500 */
+}
+
+/* --- END SCROLLBAR --- */
+
+/* Animated underline */
+.nav-link {
+    position: relative;
+    padding-bottom: 5px;
+}
+.nav-link::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 50%;
+    background: linear-gradient(90deg, #3b82f6, #06b6d4); /* Blue to Cyan */
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+.nav-link:hover::after {
+    width: 100%;
+}
+
+/* Scroll reveal */
+.reveal {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.reveal.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Pulsing dot */
+@keyframes pulse-dot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0.5; }
+}
+.pulse-dot {
+    animation: pulse-dot 2s infinite;
+}
+
+/* Gradient text */
+.gradient-text {
+    background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%); /* Blue to Cyan */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Particle background */
+.particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.particle {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    animation: rise 10s infinite ease-in;
+}
+
+@keyframes rise {
+    0% { bottom: -50px; opacity: 0; }
+    25% { opacity: 1; }
+    100% { bottom: 100%; opacity: 0; }
+}
+
+/* Header scrolled state (UPDATED FOR DARK THEME) */
+/* Ini disesuaikan agar jika class ini aktif, warnanya biru gelap, bukan putih */
+.header-scrolled {
+    background: rgba(23, 37, 84, 0.9) !important; /* bg-blue-950/90 */
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+/* Memastikan text tetap putih saat discroll karena backgroundnya gelap */
+.header-scrolled .logo-text {
+    color: #ffffff !important;
+}
+.header-scrolled #mobile-menu-btn {
+    color: #ffffff !important;
+}
+.header-scrolled .nav-link {
+    color: #cbd5e1 !important; /* Text Gray-300 */
+}
+.header-scrolled .nav-link:hover {
+    color: #ffffff !important;
+}
+
+/* Division card animation */
+.division-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+.division-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Logo styling */
+.logo-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 50%;
+    padding: 8px;
+    background: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.logo-circle {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 50%;
+    background: white;
+    padding: 2px;
+}

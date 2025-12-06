@@ -1,0 +1,26 @@
+# --- General ---
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# --- Frontend (React/Vite) ---
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.vite/
+
+# --- Backend (Go) ---
+backend/bin/
+backend/.env
+backend/*.exe
+backend/*.test
+backend/vendor/
+
+# --- OS Generated ---
+Thumbs.db
