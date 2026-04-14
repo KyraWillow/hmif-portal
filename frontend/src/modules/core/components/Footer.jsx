@@ -2,7 +2,7 @@ import React from "react";
 import { Instagram, Youtube, Linkedin, Github } from "lucide-react";
 import HmifLogo from "../../../assets/LOGO-HMIF.jpg";
 
-const Footer = () => {
+const Footer = ({ siteContent }) => {
   return (
     <footer className="bg-[#3396FF] text-white py-16 relative overflow-hidden">
       <div className="absolute inset-0 opacity-20 pointer-events-none">
@@ -44,8 +44,8 @@ const Footer = () => {
               </span>
             </div>
             <p className="text-blue-50 leading-relaxed font-medium pr-4">
-              Membentuk pribadi adaptif, peduli, dan inovatif dalam lingkungan
-              Informatika.
+              {siteContent?.footer_description ||
+                "Membentuk pribadi adaptif, peduli, dan inovatif dalam lingkungan Informatika."}
             </p>
           </div>
 

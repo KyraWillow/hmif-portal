@@ -1,8 +1,8 @@
 import React from "react";
-import { Users, Info, Award, CheckCircle } from "lucide-react";
+import { Info, Award, CheckCircle } from "lucide-react";
 import PicAbout from "../../../assets/PICTURE-ABOUT.jpg";
 
-const Tentang = () => {
+const Tentang = ({ siteContent }) => {
   return (
     <section
       id="tentang"
@@ -19,15 +19,15 @@ const Tentang = () => {
         </div>
         <div>
           <div className="inline-flex items-center bg-purple-100 text-purple-600 px-4 py-2 rounded-full text-sm font-semibold mb-4">
-            <Info size={16} className="mr-2" /> Tentang Kami
+            <Info size={16} className="mr-2" />{" "}
+            {siteContent?.about_badge || "Tentang Kami"}
           </div>
           <h2 className="text-4xl font-black mb-6">
-            Tentang <span className="text-gradient">HMIF</span>
+            {siteContent?.about_title || "Tentang HMIF"}
           </h2>
           <p className="text-gray-600 text-lg mb-6 leading-relaxed">
-            Himpunan Mahasiswa Informatika (HMIF) adalah rumah bagi seluruh
-            mahasiswa Informatika. Kami berdedikasi untuk mengembangkan potensi
-            akademik, non-akademik, dan soft skill.
+            {siteContent?.about_description ||
+              "Himpunan Mahasiswa Informatika (HMIF) adalah rumah bagi seluruh mahasiswa Informatika."}
           </p>
           <div className="space-y-4">
             <div className="glass-card p-6 rounded-2xl flex items-start space-x-4 hover:translate-x-2 transition-transform">
@@ -37,7 +37,8 @@ const Tentang = () => {
               <div>
                 <h3 className="font-bold text-lg">Visi</h3>
                 <p className="text-gray-600 text-sm">
-                  Membangun HMIF yang solid, bertanggung jawab, dan profesional.
+                  {siteContent?.vision ||
+                    "Membangun HMIF yang solid, bertanggung jawab, dan profesional."}
                 </p>
               </div>
             </div>
@@ -48,8 +49,8 @@ const Tentang = () => {
               <div>
                 <h3 className="font-bold text-lg">Misi</h3>
                 <p className="text-gray-600 text-sm">
-                  Membentuk pribadi adaptif, peduli, dan inovatif dalam
-                  lingkungan Informatika.
+                  {siteContent?.mission ||
+                    "Membentuk pribadi adaptif, peduli, dan inovatif dalam lingkungan Informatika."}
                 </p>
               </div>
             </div>

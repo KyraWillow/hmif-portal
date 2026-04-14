@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Menu, X, ChevronRight } from "lucide-react"; // Tambah ChevronRight
 import logoImage from "../../../assets/LOGO-HMIF.jpg";
 
-const Navbar = () => {
+const Navbar = ({ siteContent }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -54,7 +54,7 @@ const Navbar = () => {
                 />
               </div>
               <span className="text-xl md:text-2xl font-black text-white tracking-wide">
-                HMIF
+                {siteContent?.site_name || "HMIF"}
               </span>
             </a>
 

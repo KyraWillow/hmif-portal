@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Users, Loader2 } from "lucide-react";
 import ModalDivisi from "./DivisionModal";
+import { getJSON } from "../../../lib/api";
 
 // Konfigurasi Warna Divisi
 const DIVISION_CONFIG = {
@@ -84,10 +85,7 @@ const TeamList = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/members");
-        if (!response.ok) throw new Error("Gagal koneksi ke server backend");
-
-        const allMembers = await response.json();
+        const allMembers = await getJSON("/members");
         const bph = [];
         const groups = {};
 
