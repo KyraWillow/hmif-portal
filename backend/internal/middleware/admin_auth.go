@@ -1,22 +1,16 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
-	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
-func AdminAuthMiddleware() gin.HandlerFunc {
-	token := os.Getenv("ADMIN_TOKEN")
-	if token == "" {
-		token = "hmif-admin"
-		log.Println("ADMIN_TOKEN belum diatur, menggunakan token default 'hmif-admin'")
-	}
-
+func AdminAuthMiddleware(token string) gin.HandlerFunc {
+	expectedToken := strings.TrimSpace(token)
 	return func(c *gin.Context) {
-		if c.GetHeader("X-Admin-Token") != token {
+		if c.GetHeader("X-Admin-Token") != expectedToken {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": "akses admin ditolak",
 			})

@@ -1,33 +1,35 @@
 package main
 
 import (
+	"backend/database"
 	"backend/internal/handlers"
 	"backend/internal/middleware"
 	"backend/internal/models"
 	"backend/internal/repositories"
 	"backend/internal/services"
 	"log"
+	"net/http"
+	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
 func main() {
-	_ = godotenv.Load()
-	dsn := os.Getenv("DATABASE_URL")
-
-	if dsn == "" {
-		log.Fatal("DATABASE_URL tidak ditemukan di environment!")
+	db, err := database.OpenFromEnv()
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	sqlDB, err := db.DB()
 	if err != nil {
-		log.Fatal("GAGAL CONNECT DATABASE: ", err)
+		log.Fatal("gagal mendapatkan koneksi database SQL: ", err)
+	}
+	if err := sqlDB.Ping(); err != nil {
+		log.Fatal("gagal ping database: ", err)
 	}
 
 	if err := db.AutoMigrate(
@@ -57,18 +59,40 @@ func main() {
 	)
 	contentHandler := handlers.NewContentHandler(contentService)
 
+	adminToken := strings.TrimSpace(os.Getenv("ADMIN_TOKEN"))
+	if adminToken == "" {
+		log.Fatal("ADMIN_TOKEN wajib diisi untuk mengakses endpoint admin")
+	}
+
 	r := gin.Default()
+	if err := r.SetTrustedProxies(nil); err != nil {
+		log.Fatal("gagal mengatur trusted proxies: ", err)
+	}
+
+	allowedOrigins := parseCSVEnv("CORS_ALLOWED_ORIGINS")
+	if len(allowedOrigins) == 0 {
+		allowedOrigins = []string{
+			"http://localhost:5173",
+			"http://127.0.0.1:5173",
+			"http://localhost:4173",
+			"http://127.0.0.1:4173",
+			"https://*.vercel.app",
+		}
+	}
 
 	r.Use(cors.New(cors.Config{
 		AllowOriginFunc: func(origin string) bool {
-			return strings.HasPrefix(origin, "http://localhost:") ||
-				strings.HasPrefix(origin, "http://127.0.0.1:") ||
-				origin == "https://hmif-portal.vercel.app"
+			return originAllowed(origin, allowedOrigins)
 		},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "X-Admin-Token"},
-		AllowCredentials: true,
+		AllowCredentials: false,
+		MaxAge:           12 * time.Hour,
 	}))
+
+	r.GET("/healthz", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
 
 	api := r.Group("/api")
 	{
@@ -80,7 +104,7 @@ func main() {
 	}
 
 	admin := api.Group("/admin")
-	admin.Use(middleware.AdminAuthMiddleware())
+	admin.Use(middleware.AdminAuthMiddleware(adminToken))
 	{
 		admin.GET("/bootstrap", contentHandler.GetAdminBootstrap)
 		admin.PUT("/site-content", contentHandler.UpdateSiteContent)
@@ -108,5 +132,88 @@ func main() {
 	}
 
 	log.Println("Server running on port " + port)
-	r.Run(":" + port)
+	if err := r.Run(":" + port); err != nil {
+		log.Fatal("gagal menjalankan server: ", err)
+	}
+}
+
+func parseCSVEnv(key string) []string {
+	raw := strings.TrimSpace(os.Getenv(key))
+	if raw == "" {
+		return nil
+	}
+
+	parts := strings.Split(raw, ",")
+	result := make([]string, 0, len(parts))
+	for _, part := range parts {
+		item := strings.TrimSpace(part)
+		if item != "" {
+			result = append(result, item)
+		}
+	}
+	return result
+}
+
+func originAllowed(origin string, allowedOrigins []string) bool {
+	originURL, err := url.Parse(origin)
+	if err != nil || originURL.Scheme == "" || originURL.Host == "" {
+		return false
+	}
+
+	originHost := originURL.Hostname()
+	for _, allowed := range allowedOrigins {
+		pattern := strings.TrimSpace(allowed)
+		if pattern == "" {
+			continue
+		}
+
+		if pattern == "*" || strings.EqualFold(origin, pattern) {
+			return true
+		}
+
+		if strings.HasPrefix(pattern, "*.") {
+			if hasSubdomainSuffix(originHost, strings.TrimPrefix(pattern, "*.")) {
+				return true
+			}
+			continue
+		}
+
+		if strings.Contains(pattern, "://") {
+			patternURL, parseErr := url.Parse(pattern)
+			if parseErr != nil || patternURL.Scheme == "" || patternURL.Host == "" {
+				continue
+			}
+
+			patternHost := patternURL.Hostname()
+			if strings.HasPrefix(patternHost, "*.") {
+				if strings.EqualFold(originURL.Scheme, patternURL.Scheme) &&
+					hasSubdomainSuffix(originHost, strings.TrimPrefix(patternHost, "*.")) {
+					return true
+				}
+				continue
+			}
+
+			if strings.EqualFold(originURL.Scheme, patternURL.Scheme) &&
+				strings.EqualFold(originURL.Host, patternURL.Host) {
+				return true
+			}
+			continue
+		}
+
+		if strings.EqualFold(originHost, pattern) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func hasSubdomainSuffix(host, suffix string) bool {
+	host = strings.ToLower(strings.TrimSpace(host))
+	suffix = strings.ToLower(strings.TrimSpace(suffix))
+	if host == "" || suffix == "" || host == suffix {
+		return false
+	}
+
+	return strings.HasSuffix(host, "."+suffix)
 }

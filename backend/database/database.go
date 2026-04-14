@@ -2,37 +2,81 @@ package database
 
 import (
 	"fmt"
-	"log"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
+func OpenFromEnv() (*gorm.DB, error) {
+	_ = godotenv.Load()
 
-func ConnectDB() {
-   
-    err := godotenv.Load() 
-    if err != nil {
-        log.Println("Note: File .env tidak ditemukan, menggunakan environment system")
-    }
+	dsn, err := BuildDSNFromEnv()
+	if err != nil {
+		return nil, err
+	}
 
-    host := os.Getenv("DB_HOST")
-    user := os.Getenv("DB_USER")
-    password := os.Getenv("DB_PASSWORD")
-    dbname := os.Getenv("DB_NAME")
-    port := os.Getenv("DB_PORT")
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return nil, fmt.Errorf("gagal koneksi ke database: %w", err)
+	}
 
-    dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Jakarta", host, user, password, dbname, port)
+	return db, nil
+}
 
-    database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+func BuildDSNFromEnv() (string, error) {
+	databaseURL := strings.TrimSpace(os.Getenv("DATABASE_URL"))
+	if databaseURL != "" {
+		return databaseURL, nil
+	}
 
-    if err != nil {
-        panic("Gagal koneksi ke database!")
-    }
+	host := strings.TrimSpace(os.Getenv("DB_HOST"))
+	port := strings.TrimSpace(os.Getenv("DB_PORT"))
+	user := strings.TrimSpace(os.Getenv("DB_USER"))
+	password := os.Getenv("DB_PASSWORD")
+	dbName := strings.TrimSpace(os.Getenv("DB_NAME"))
+	sslMode := strings.TrimSpace(os.Getenv("DB_SSLMODE"))
+	timeZone := strings.TrimSpace(os.Getenv("DB_TIMEZONE"))
 
-    DB = database
-    log.Println("Sukses koneksi ke database!")
+	if sslMode == "" {
+		sslMode = "disable"
+	}
+
+	if timeZone == "" {
+		timeZone = "Asia/Jakarta"
+	}
+
+	missingFields := make([]string, 0, 5)
+	if host == "" {
+		missingFields = append(missingFields, "DB_HOST")
+	}
+	if port == "" {
+		missingFields = append(missingFields, "DB_PORT")
+	}
+	if user == "" {
+		missingFields = append(missingFields, "DB_USER")
+	}
+	if dbName == "" {
+		missingFields = append(missingFields, "DB_NAME")
+	}
+
+	if len(missingFields) > 0 {
+		return "", fmt.Errorf(
+			"konfigurasi database tidak lengkap: set DATABASE_URL atau lengkapi %s",
+			strings.Join(missingFields, ", "),
+		)
+	}
+
+	return fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s",
+		host,
+		user,
+		password,
+		dbName,
+		port,
+		sslMode,
+		timeZone,
+	), nil
 }

@@ -118,7 +118,7 @@ const TeamList = () => {
         setDivisionsData(groups);
       } catch (err) {
         console.error("Error:", err);
-        setError("Gagal memuat data. Pastikan Backend Go (port 8080) menyala.");
+        setError("Gagal memuat data. Pastikan API backend dapat diakses.");
       } finally {
         setLoading(false);
       }

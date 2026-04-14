@@ -1,10 +1,27 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+function resolveDefaultApiBaseURL() {
+  if (typeof window !== "undefined") {
+    const hostname = window.location.hostname;
+    if (hostname === "localhost" || hostname === "127.0.0.1") {
+      return "http://localhost:8080/api";
+    }
+  }
 
-function buildHeaders(token, extraHeaders = {}) {
+  return "/api";
+}
+
+function normalizeBaseUrl(value) {
+  if (!value) return "";
+  return value.replace(/\/+$/, "");
+}
+
+const API_BASE_URL = normalizeBaseUrl(
+  import.meta.env.VITE_API_BASE_URL || resolveDefaultApiBaseURL()
+);
+
+function buildHeaders(token, { extraHeaders = {}, hasBody = false } = {}) {
   const headers = { ...extraHeaders };
 
-  if (!headers["Content-Type"]) {
+  if (hasBody && !headers["Content-Type"]) {
     headers["Content-Type"] = "application/json";
   }
 
@@ -16,7 +33,12 @@ function buildHeaders(token, extraHeaders = {}) {
 }
 
 async function request(path, options = {}) {
-  const response = await fetch(`${API_BASE_URL}${path}`, options);
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, options);
+  } catch {
+    throw new Error("Tidak dapat terhubung ke server.");
+  }
 
   if (response.status === 204) {
     return null;
@@ -38,7 +60,7 @@ export function getJSON(path) {
 export function sendJSON(path, { method = "POST", body, token } = {}) {
   return request(path, {
     method,
-    headers: buildHeaders(token),
+    headers: buildHeaders(token, { hasBody: Boolean(body) }),
     body: body ? JSON.stringify(body) : undefined,
   });
 }

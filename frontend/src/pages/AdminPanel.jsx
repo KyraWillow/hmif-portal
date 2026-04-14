@@ -404,8 +404,8 @@ const AdminPanel = () => {
                 </div>
               ) : (
                 <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm leading-7 text-amber-700">
-                  Jika `ADMIN_TOKEN` belum diatur di backend, aplikasi memakai
-                  token default `hmif-admin`.
+                  Gunakan nilai `ADMIN_TOKEN` yang sama dengan konfigurasi
+                  backend Railway untuk login.
                 </div>
               )}
             </div>
